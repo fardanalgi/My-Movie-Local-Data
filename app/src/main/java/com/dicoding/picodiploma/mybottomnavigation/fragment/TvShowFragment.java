@@ -1,18 +1,26 @@
 package com.dicoding.picodiploma.mybottomnavigation.fragment;
 
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
+import com.dicoding.picodiploma.mybottomnavigation.ItemClickSupport;
 import com.dicoding.picodiploma.mybottomnavigation.R;
+import com.dicoding.picodiploma.mybottomnavigation.activity.DetailTv_Activity;
 import com.dicoding.picodiploma.mybottomnavigation.adapter.TvshowAdapter;
 import com.dicoding.picodiploma.mybottomnavigation.model.TvShow;
-import com.dicoding.picodiploma.mybottomnavigation.model.TvshowData;
+import com.dicoding.picodiploma.mybottomnavigation.viewmodel.TvViewModel;
 
 import java.util.ArrayList;
 
@@ -23,7 +31,8 @@ import java.util.ArrayList;
 public class TvShowFragment extends Fragment {
 
     private RecyclerView rvTvshow;
-    private ArrayList<TvShow> list = new ArrayList<>();
+    private TvshowAdapter tvshowAdapter;
+    private ProgressBar progressBar;
 
 
     public TvShowFragment() {
@@ -35,32 +44,57 @@ public class TvShowFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
-        View view = inflater.inflate(R.layout.fragment_tv_show, container, false);
+        return inflater.inflate(R.layout.fragment_tv_show, container, false);
+
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState){
+        super.onViewCreated(view, savedInstanceState);
 
         rvTvshow = view.findViewById(R.id.rv_Tv);
-        rvTvshow.setHasFixedSize(true);
+        progressBar = view.findViewById(R.id.progressbarTv_id);
+        progressBar.setVisibility(View.VISIBLE);
 
-        list.addAll(TvshowData.getList());
-        showRecyclerList();
+        showRecyclerListTv(view);
 
-        return view;
+        TvViewModel tvViewModel = ViewModelProviders.of(this).get(TvViewModel.class);
+        tvViewModel.setTvData();
+        tvViewModel.getTv().observe(this,getTv);
+
     }
 
-    private void showRecyclerList(){
-        rvTvshow.setLayoutManager(new LinearLayoutManager(getContext()));
-        TvshowAdapter tvshowAdapter = new TvshowAdapter(list,getContext());
+    private final Observer<ArrayList<TvShow>> getTv = new Observer<ArrayList<TvShow>>() {
+        @Override
+        public void onChanged(@Nullable final ArrayList<TvShow> tvShows) {
+            if (tvShows != null){
+                tvshowAdapter.setTvData(tvShows);
+                progressBar.setVisibility(View.GONE);
+                ItemClickSupport.addTo(rvTvshow).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                        showSelectedPopularData(tvShows.get(position));
+                    }
+                });
+            }
+        }
+    };
+
+    private void showSelectedPopularData(TvShow itemPopularData) {
+        Intent intent = new Intent(getActivity(), DetailTv_Activity.class);
+        intent.putExtra(DetailTv_Activity.EXTRA_TV, itemPopularData);
+        startActivity(intent);
+    }
+
+    private void showRecyclerListTv(View view){
+        tvshowAdapter = new TvshowAdapter();
+        tvshowAdapter.notifyDataSetChanged();
+        rvTvshow.setLayoutManager(new LinearLayoutManager(getContext(),RecyclerView.VERTICAL,view.isInLayout()));
+
         rvTvshow.setAdapter(tvshowAdapter);
 
-        tvshowAdapter.setOnItemClickCallbackTv(new TvshowAdapter.OnItemClickCallbackTv() {
-            @Override
-            public void onItemClicked(TvShow tvShow) {
-                showSelectedTvshow(tvShow);
-            }
-        });
 
     }
-     private void showSelectedTvshow(TvShow tvShow){
 
-     }
 
 }

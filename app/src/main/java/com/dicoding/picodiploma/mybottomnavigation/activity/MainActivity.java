@@ -1,4 +1,4 @@
-package com.dicoding.picodiploma.mybottomnavigation;
+package com.dicoding.picodiploma.mybottomnavigation.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.dicoding.picodiploma.mybottomnavigation.R;
 import com.dicoding.picodiploma.mybottomnavigation.fragment.MoviesFragment;
 import com.dicoding.picodiploma.mybottomnavigation.fragment.TvShowFragment;
 
